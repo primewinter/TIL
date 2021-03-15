@@ -12,8 +12,7 @@ Node.js는 크롬V8 자바스크립트 엔진으로 빌드된 자바스크립트
 
 런타임은 특정 언어로 만든 프로그램들을 실행할 수 있는 환경을 뜻한다. 즉, 노드는 자바스크립트 프로그램을 컴퓨터에서 실행할 수 있게 해준다. 노드는 빠른 속도의 V8 엔진과 더불어 libuv 라이브러리를 사용한다. libuv 라이브러리는 노드의 특성인 이벤트 기반, 논블로킹 I/O 모델을 구현하고 있다.
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2c43ddb7-74b9-4487-878a-caffdfed8ce7/nodejs.jpg](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2c43ddb7-74b9-4487-878a-caffdfed8ce7/nodejs.jpg)
-
+![nodejs](https://user-images.githubusercontent.com/57691894/111168208-31890380-85e5-11eb-947c-8295d0e4ccc9.jpg)
 노드의 내부 구조
 
 ### 1.1.3 이벤트 기반
@@ -26,7 +25,7 @@ Node.js는 크롬V8 자바스크립트 엔진으로 빌드된 자바스크립트
 - 태스크 큐 : 이벤트 발생 후 호출되어야 할 콜백 함수들이 기다리는 공간. 이벤트 루프가 정한 순서대로 콜백들이 줄을 서 있어서 콜백 큐라고도 불린다.
 - 백그라운드 : 타이머나 I/O 작업 콜백 또는 이벤트 리스너들이 대기하는 곳.
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/00d759d2-fe95-4bed-bdc9-ea458cbb7024/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/00d759d2-fe95-4bed-bdc9-ea458cbb7024/Untitled.png)
+![event-loop](https://user-images.githubusercontent.com/57691894/111168204-3057d680-85e5-11eb-8e37-f092ad31aab7.png)
 
 ### 1.1.4 논블로킹I/O
 
