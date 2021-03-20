@@ -109,3 +109,137 @@ app.use('/img', express.static(path.join(__dirname, 'public'))); // 정적 파�
 static 미들웨어는 요청에 부합하는 정적 파일을 발견한 경우 응답으로 해당 파일을 전송한다. 이 경우 응답을 보냈으므로 다음에 나오는 라우터가 실행되지 않는다. 만약 파일을 찾지 못했다면 요청을 라우터로 넘긴다.
 
 이렇게 자체적으로 정적 파일 라우터 기능을 수행하므로 최대한 위쪽에 배치하는 것이 좋다. 그래야 서버가 쓸데없는 미들웨어 작업을 하는 것을 막을 수 있다. 서비스에 따라 쿠키 같은 것이 정적 파일을 제공하는 데 영향을 끼칠 수도 있기 때문에 자신의 서비스에 맞춰 맞는 위치를 선택해야 한다.
+
+
+### 2.5. express-session
+
+세션 관리용 미들웨어.
+
+- 설치
+
+```bash
+npm i express-session
+```
+
+- app.js
+
+```jsx
+...
+var logger = require('morgan');
+var session = require('express-session');
+
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+...
+app.use(cookieParser('secret code');
+app.use(session({
+	resave: false,
+	saveUninitialized: false,
+	secret: 'secret code',
+	cookie: {
+		httpOnly: true,
+		secure: false,
+	},
+}));
+...
+```
+
+express-session 1.5 버전 이전에는 내부적으로 cookie-parser를 사용하고 있어서 cookie-parser 미들웨어보다 뒤에 위치해야 했지만, 1.5버전 이후부터는 사용하지 않게 되어 순서가 상관 없어졌다. 그래도 cookie-parser 미들웨어 뒤에 놓는 것이 안전하다.
+
+세션에 대한 설정을 인자로 받는다.
+
+- **resave** : 요청이 왔을 때 세션에 수정 사항이 생기지 않더라도 세션을 다시 저장할지 여부
+- **saveUninitialized** : 세션에 저장할 내역이 없더라도 세션을 저장할지 여부(보통 방문자 추적 시 사용)
+- **secret** : (필수항목) cookie-parser의 비밀 키와 같은 역할
+- **cookie** : 세션 쿠키에 대한 설정 maxAge, domain, path, expires, sameSite, httpOnly, secure 등 일반적인 쿠키 옵션 제공.
+    - { httpOnly : true } 클라이언트에서 쿠키를 확인하지 못하도록 함
+    - { secure : false } https가 아닌 환경에서도 사용 가능.
+    - 배포 시에는 https를 적용하고 secure도 true로 설정하는 것이 좋다.
+
+여기서 세션 쿠키란 express-session은 클라이언트에 보내는 쿠키를 말한다. 안전하게 전송하기 위해 쿠키에 서명을 추가해야 하고, 쿠키를 서명하는 데 secret의 값이 필요하다. cookie-parser의 secret과 같게 설정해야 한다. 
+
+express-session은 req 객체 안에 req.session 객체를 만든다. 이 객체에 값을 대입하거나 삭제해서 세션을 변경할 수 있다.
+
+- **req.session.destroy()** : 세션 한번에 삭제
+- **req.sessionID** : 현재 세션의 ID
+
+### 2.6. connect-flash
+
+일회성 메시지들을 웹 브라우저에 나타낼 때 용이한 미들웨어.
+
+- 설치
+
+```bash
+npm i connect-flash
+```
+
+- app.js
+
+```jsx
+var session = require('express-session');
+var flash = require('connect-flash');
+
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+...
+app.use(session({
+	resave: false,
+	saveUninitialized: false,
+	secret: 'secret code',
+	cookie: {
+		httpOnly: true,
+		secure: false,
+	},
+}));
+app.use(flash());
+...
+```
+
+flash는 req 객체에 req.flash 메서드를 추가한다.
+- **req.flash(키, 값)** : 해당 키에 값 설정
+- **req.flas(키)** : 해당 키에 대한 값 불러오기
+
+- routes/users.js
+
+```jsx
+var exrpess = require('express');
+var router = express.Router();
+
+/* GET users listing. */
+router.get('/', function(req, res, next) {
+	res.send('respond with a resource');
+});
+
+router.get('/flash', function(req, res) {
+	req.session.message = '세션 메시지';
+	req.flash('message', 'flash 메시지');
+	req.redirec('/users/flash/result');
+});
+/*
+	/users/flash 라우터로 GET 요청을 보내면
+	서버에서는 세션과 flash에 메시지를 설정하고, /users/flash/result 메시지로 리다이렉트 한다.
+*/
+
+router.get('/flash/result', function(req, res) {
+	res.send(`${req.session.message} ${req.flash('mapper')}`);
+});
+/*
+	첫 번째 /users/flash/result에는 세션 메시지와 flash 메시지가 모두 보인다.
+*/
+
+module.exports = router;
+```
+
+- /users/flash/result 방문화면
+
+```html
+세션 메시지 flash 메시지
+```
+
+- /users/flash/result 재방문 화면
+
+```html
+세션 메시지
+```
+
+브라우저를 새로고침 하면 flash 메시지는 일회성이기 때문에 보이지 않는다. 이러한 성질을 이용하여 로그인 에러나 회원가입 에러 같은 일회성 경고 메시지는 flash 미들웨어로 보내면 좋다.
