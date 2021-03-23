@@ -20,6 +20,9 @@ git rm --cached -r [폴더명]
 ```bash
 git filter-branch -f --index-filter "git rm --cached --ignore-unmatch '[경로/파일명]'" --prune-empty -- --all
 ```
+- **git filter-branch**
+
+브랜치를 재작성하는 명령어. 필터를 제공해서 필터에 적용된 파일만 가지고 히스토리를 다시 구축한다. 이 기능을 이용해 특정 파일에 대한 history와 해당 파일을 지운다.
 
 - 결과
 
