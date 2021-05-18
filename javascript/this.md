@@ -203,3 +203,27 @@ document.body.querySelector('#a')
 (2) 전역객체와 배열의 각 요소가 총 5회 출력 → 콜백 함수 내부에서의 this는 전역객체 참조
 
 (3) click 이벤트가 발생하면 HTML 엘리먼트와 클릭 이벤트에 관한 정보가 담긴 객체 출력 → 콜백 함수를 호출할 때 자신의 this를 상속하도록 정의되어 있다
+
+## 1-5 생성자 함수 내부에서의 this
+
+- 생성자 함수 : 어떵 공통된 성질을 지니는 객체들을 생성하는 데 사용하는 함수 (객체 지향 언어에서는 class라고 부른다)
+
+JS는 함수에 생성자로서의 역할을 함께 부여한다. new 명령어와 함께 함수를 호출하면 해당 함수가 생성자로서 동작한다. 그리고 어떤 함수가 생성자 함수로서 호출된 경우 내부에서의 this는 곧 새로 만들 구체적인 인스턴스 자신이 된다.
+
+생성자 함수를 호출(new 명령어와 함께 함수를 호출)하면 우선 생성자의 prototype 프로퍼티를 참조하는 __proto__라는 프로퍼티가 있는 객체(인스턴스)를 만들고, 미리 준비된 공통 속성 및 개성을 해당 객체(this)에 부여한다. 이렇게 해서 구체적인 인스턴스가 만들어진다.
+
+```jsx
+var Cat = function (name, age) {
+		this.bark = '야옹';
+		this.name = name;
+		this.age = age;
+};
+var choco = new Cat('초코', 7); // this : choco 인스턴스
+var nabi = new Cat('나비', 5); // this : nabi 인스턴스
+console.log(choco, nabi);
+
+/* 결과
+Cat { bark: '야옹', name: '초코', age: 7 }
+Cat { bark: '야옹', name: '나비', age: 5 }
+*/
+```
