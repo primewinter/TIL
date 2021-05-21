@@ -227,3 +227,54 @@ Cat { bark: '야옹', name: '초코', age: 7 }
 Cat { bark: '야옹', name: '나비', age: 5 }
 */
 ```
+
+## 2 명시적으로 this를 바인딩하는 방법
+
+## 2-1 call 메서드
+
+```jsx
+Function.prototype.call(thisArg[, arg1[, arg2, ...]]])
+/* call 메서드 : 메서드의 호출 주체인 함수를 즉시 실행시키는 명령
+* 첫 번째 인자를 this로 바인딩하고, 이후의 인자들을 호출할 함수의 매개변수로 함
+*/ 
+
+var func = function (a, b, c) {
+		console.log(this, a, b, c);
+};
+
+func(1, 2, 3); // Window{ ... } 1 2 3
+func.call({ x:1 }, 4, 5, 6); // { x:1 } 4 5 6
+
+var obj = {
+		a: 1,
+		method: function(x, y) {
+				console.log(this.a, x, y);
+		}
+};
+
+obj.method(2, 3); // 1 2 3
+obj.method.call({ a:4 }, 5, 6); // 4 5 6
+```
+
+## 2-2 apply 메서드
+
+```jsx
+Function.prototype.apply(thisArg[, argsArray])
+/* apply 메서드 : call 메서드와 기능적으로 완전히 동일
+* 첫 번째 인자를 this로 바인딩
+* 두 번째 인자를 배열로 받아 그 배열의 요소들을 호출할 함수의 매개변수로 지정
+*/
+
+var func = function(a, b, c) {
+		console.log(this, a, b, c);
+};
+func.apply({ x:1 }, [4, 5, 6]); // { x:1 } 4 5 6
+
+var obj = {
+		a: 1,
+		method: function(x, y) {
+				console.log(this.a, x, y);
+		}
+};
+obj.method.apply({ a:4 }, [5, 6]); // 4 5 6
+```
