@@ -278,3 +278,138 @@ var obj = {
 };
 obj.method.apply({ a:4 }, [5, 6]); // 4 5 6
 ```
+## 2-3 call/apply 메서드의 활용
+
+### 유사배열객체array-like object에 배열 메서드를 적용
+
+```jsx
+var obj = {
+	0: 'a',
+	1: 'b',
+	2: 'c',
+	length: 3
+};
+Array.prototype.push.call(obj, 'd');
+console.log(obj); // { 0: 'a', 1: 'b', 2: 'c', 3: 'd', length: 4 }
+
+var arr = Array.prototype.slice.call(obj);
+console.log(arr); // [ 'a', 'b', 'c', 'd' ]
+
+/* 예제 설명
+ * call 메서드를 이용해 원본인 유사배열객체의 얕은 복사를 수행한 것인데,
+ * slice 메서드가 배열 메서드이기 때문에 복사본은 배열로 반환하게 된 것이다.
+ */
+```
+
+객체에는 배열 메서드를 직접 적용할 수 없지만, 키가 0 또는 양의 정수인 프로퍼티가 존재하고, length 프로퍼티의 값이 0 또는 양의 정수인 객체(=배열의 구조와 유사한 객체의 경우) call 또는 apply 메서드를 이용해 배열 메서드를 차용할 수 있다.
+
+- slice 메서드 : 시작 인덱스값과 마지막 인덱스값이 받아 시작값부터 마지막값의 앞 부분까지의 **배열 요소를 추출. (매개변수를 안 넣으면 원본 배열의 얕은 복사본 반환)
+
+```jsx
+function a () {
+	var argv = Array.prototype.slice.call(arguments);
+	argv.forEach(function (arg) {
+			console.log(arg);
+	});
+}
+a(1, 2, 3);
+
+document.body.innerHTML = '<div>a</div><div>b</div><div>c</div>';
+var nodeList = document.querySelectorAll('div');
+var nodeArr = Array.prototype.slice.call(nodeList);
+nodeArr.forEach(function (node) {
+		console.log(node);
+});
+```
+
+유사배열객체에는 call/apply 메서드를 이용해 모든 배열 메서드를 적용할 수 있다. 배열처럼 인덱스와 length프로퍼티를 지니는 문자열도 마찬가지이다. 문자열의 경우 length 프로퍼티가 읽기 전용이기 때문에 원본 문자열에 변경을 가하는 메서드(push, pop, shift, unshift, splice 등)는 에러를 던지며, concat처럼 대상이 반드시 배열이어야 하는 경우에는 에러는 나지 않지만 제대로 된 결과를 얻을 수 없다.
+
+```jsx
+var str = 'abc def';
+
+Array.prototype.push.call(str, ', pushed string');
+// Error: Cannot assign to read only property 'length' of object [object String]
+
+Array.prototype.concat.call(str, 'string'); // [String {"abc def"}, "string"]
+
+Array.prototype.every.call(str, function(c) { return char !== ' '; }); // false
+
+Array.prototype.some.call(str, function(c) { return char === ' '; }); // true
+
+var newArr = Array.prototype.map.call(str, function(c) { return char + '!'; });
+console.log(newArr); // ['a!', 'b!', 'c!', ' !', 'd!', 'e!', 'f!']
+
+var newStr = Array.prototype.reduce.apply(str, [
+		function(string, char, i) { return string + char + i; },
+		''
+]);
+console.log(newStr); // "a0b1c2 3d4e5f6"
+
+var obj = {
+	0: 'a',
+	1: 'b',
+	2: 'c',
+	length: 3
+};
+var arr = Array.from(obj);
+console.log(arr); // ['a', 'b', 'c']
+```
+
+### 생성자 내부에서 다른 생성자를 호출
+
+```jsx
+function Person(name, gender) {
+		this.name = name;
+		this.gender = gender;
+}
+
+function Student(name, gender, school) {
+		Person.call(this, name, gender);
+		this.school = school;
+}
+
+function Employee(name, gender, company) {
+		Person.apply(this, [name, gender]);
+		this.company = company;
+}
+var by = new Student('보영', 'female', '단국대');
+var jn = new Employee('재난', 'male', '구골');
+```
+
+### 여러 인수를 묶어 하나의 배열로 전달하고 싶을 때 - apply 활용
+
+- 최대/최솟값을 구하는 코드를 직접 구현
+
+```jsx
+var numbers = [10, 20, 3, 16, 45];
+var max = min = numbers[0];
+numbers.forEach(function(number) {
+		if(number > max) {
+				max = number;
+		}
+		if(number < min) {
+				min = number;
+		}
+});
+console.log(max, min); // 45 3
+```
+
+- 여러 인수를 받는 메서드(Math.max/Math.min)에 apply를 적용
+
+```jsx
+var numbers = [10, 20, 3, 16, 45];
+var max = Math.max.apply(null, numbers);
+var min = Math.min.apply(null, numbers);
+console.log(max, min); // 45 3
+```
+
+- ES6의 펼치기 연산자 활용
+
+```jsx
+const numbers = [10, 20, 3, 16, 45];
+const max = Math.max(...numbers);
+const min = Math.min(...numbers);
+console.log(max, min); // 45 3
+```
+
+call/apply 메서드는 명시적으로 별도의 this를 바인딩하면서 함수 또는 메서드를 실행하는 훌륭한 방법이지만 오히려 이로 인해 this를 예측하기 어렵게 만들어 코드 해석을 방해한다. 그럼에도 불구하고 ES5 이하의 환경에서는 마땅한 대안이 없기 때문에 실무에서 매우 광범위하게 활용되고 있다.
